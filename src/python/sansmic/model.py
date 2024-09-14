@@ -238,7 +238,7 @@ class AdvancedOptions:
 class StageDefinition:
     """Defines a SANSMIC simulation stage which is an injection period followed by a rest period."""
 
-    title: str = None
+    title: str = ""
     """Title for the stage."""
     simulation_mode: SimulationMode = None
     """The simulation mode used in this stage."""
@@ -719,7 +719,7 @@ class StageDefinition:
 class Scenario:
     """A SANSMIC scenario definition used to run a simulation."""
 
-    title: str = None
+    title: str = ""
     """General title for the scenario."""
     comments: str = """"""
     """Comments about the scenario"""
@@ -897,6 +897,10 @@ class Scenario:
 
         defaults = kwargs.pop("defaults", self.defaults)
         stage = StageDefinition(defaults=defaults, **kwargs)
+        if not stage.title:
+            stage.title = "Stage {}".format(
+                pos + 1 if pos is not None else len(self.stages + 1)
+            )
         if pos is None:
             self.stages.append(stage)
         else:

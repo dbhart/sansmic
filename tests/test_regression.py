@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+import tempfile
 import unittest
 from os.path import abspath, dirname, join
 
@@ -19,14 +20,18 @@ class TestRegression(unittest.TestCase):
         cls.tstF = sansmic.io.read_tst_file(join(testdir, cls.nameF))
         cls.resF = sansmic.io.read_classic_out_ddl(join(testdir, cls.nameF))
         cls.namePy = "regression"
+        # Set up temporary directory
+        cls.tempdir = tempfile.TemporaryDirectory()
+        cls.tempdirname = cls.tempdir.name
+        # cls.tempdirname = abspath('tests')
 
     def runTest(self):
         model = sansmic.read_scenario(self.datF)
-        sansmic.write_scenario(model, join(testdir, self.namePy + ".toml"))
-        with model.new_simulation(join(testdir, self.namePy)) as sim:
+        sansmic.write_scenario(model, join(self.tempdirname, self.namePy + ".toml"))
+        with model.new_simulation(join(self.tempdirname, self.namePy)) as sim:
             sim.run_sim()
         resPy = sim.results
-        tstPy = sansmic.io.read_tst_file(join(testdir, self.namePy))
+        tstPy = sansmic.io.read_tst_file(join(self.tempdirname, self.namePy))
         Stats = sansmic.model.pd.DataFrame.from_dict(
             dict(
                 rmse=np.sqrt(np.mean((self.tstF - tstPy) ** 2, 0)),
@@ -52,3 +57,7 @@ class TestRegression(unittest.TestCase):
         self.assertLessEqual(Stats.rmse_rel_err["Q_fill"], 5.0e-4)
         self.assertLessEqual(Stats.rmse_rel_err["V_inj"], 1.0e-3)
         self.assertLessEqual(Stats.rmse_rel_err["V_fill"], 1.0e-3)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tempdir.cleanup()

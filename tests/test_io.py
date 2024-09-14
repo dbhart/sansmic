@@ -9,8 +9,6 @@ import pandas as pd
 import sansmic, sansmic.io, sansmic.model
 import tempfile
 
-testdir = dirname(abspath(str(__file__)))
-
 
 class TestReadAndWriteScenarios(unittest.TestCase):
     @classmethod
@@ -786,7 +784,3 @@ END
 1.01   0.05   4000.   4000.
 END
 """
-
-
-if __name__ == "__main__":
-    unittest.main()
