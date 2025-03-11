@@ -243,6 +243,8 @@ class to_si(factor, ReprEnum):
     sansmic uses the code ``43560.[sft_i]`` for an acre defined using the international foot
     rather than the more convenient ``[acr_us]``. Hopefully the acre based
     on the international foot will be added in the next release of the UCUM.
+
+    Combined units, such as ``[bbl_us]/d`` are parsed and processed accordingly.
     """
 
     inch = '[in_i]', Fraction(254, 10_000), 'm'
@@ -259,24 +261,37 @@ class to_si(factor, ReprEnum):
     """The square inch"""
     square_foot = '[sft_i]', Fraction(9_290_304, 100_000_000), 'm2'
     """The square foot"""
-    acre = '43560.[ft_i]2', Fraction(404_685_642_240, 100_000_000), 'm2'
+    acre = '43560.[sft_i]', Fraction(404_685_642_240, 100_000_000), 'm2'
     """The acre, defined as 43560 square feet; as of Jan 1, 2023, the acre is defined using the international foot"""
     survey_acre = '[acr_us]', Fraction(62_726_400_000, 15_499_969), 'm2'
     """The acre, defined as 43560 square feet; prior to Jan 1, 2023, the acre was defined using the US Survey Foot"""
     cubic_inch = '[cin_i]', Fraction(16_387_064, 1_000_000_000_000), 'm3'
+    """The cubic inch"""
     cubic_foot = '[cft_i]', Fraction(28_316_846_592, 1_000_000_000_000), 'm3'
+    """The (international) cubic foot"""
     gallon = '[gal_us]'
+    """The US liquid gallon (1 gal := 1 liq gal := 1 gal (US) := 231 in^3)"""
     barrel = '[bbl_us]', Fraction(158_987_294_928, 1_000_000_000_000), 'm3'
+    """The oil barrel (1 bbl := 42 liq gal (US))"""
     thousand_barrels = '10^3.[bbl_us]', Fraction(158_987_294_928, 1_000_000_000), 'm3'
+    """One thousand barrels (1 Mbbl := 10^3 bbl) (note: this is **not** the prefix "mega-", it is "M = mille = thousand", a "customary" prefix)"""
     million_barrels = '10^6.[bbl_us]', Fraction(158_987_294_928, 1_000_000), 'm3'
+    """One million barrels (1 MMbbl := 10^6 bbl) (note: this is **not** the prefix "mega-" - it is also not the Roman numeral "MM=2000" - it is "M" x "M" = 1000000)"""
     centimeter = 'cm', Fraction(1, 100), 'm'
+    """Centimeter"""
     meter = 'm', 1, 'm'
+    "Meter"
     square_centimeter = 'cm2', Fraction(1, 10_000), 'm2'
+    "Square centimeter or centimetre squared"
     square_meter = 'm2', 1, 'm2'
+    "Square meter or metre squared"
     hectare = 'ha', 10_000, 'm2'
+    "Hectare (1 ha := 10000 m^2)"
     milliliter = 'mL', Fraction(1, 1_000_000), 'm3'
+    "Milliliter or millilitre"
     liter = 'L', Fraction(1, 1_000), 'm3'
+    "Liter or litre"
     cubic_centimeter = 'cm3', Fraction(1, 1_000_000), 'm3'
+    """Cubic centimeter or centimetre cubed"""
     cubic_meter = 'm3', 1, 'm3'
-    barrels_per_day = '[bbl_us]/d', Fraction(158_987_294_928, 1_000_000_000_000), 'm3/d'
-    barrels_per_hour = '[bbl_us]/h', Fraction(158_987_294_928, 1_000_000_000_000), 'm3/h'
+    """Cubic meter or metre cubed"""
