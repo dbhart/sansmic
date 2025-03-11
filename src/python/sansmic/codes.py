@@ -240,11 +240,13 @@ class to_si(factor, ReprEnum):
     coordinates where using the wrong foot could result in mis-loactions by tens of feet.
 
     The UCUM does not yet have a code (as of version 2.2) for the international acre. Thus, 
-    sansmic uses the code ``43560.[sft_i]`` for an acre defined using the international foot
-    rather than the more convenient ``[acr_us]``. Hopefully the acre based
-    on the international foot will be added in the next release of the UCUM.
+    sansmic uses the code ``43560.[sft_i]`` for an acre defined using the international foot. 
+    Hopefully the acre based on the international foot will be added in the next release of 
+    the UCUM.
 
-    Combined units, such as ``[bbl_us]/d`` are parsed and processed accordingly.
+    Combined units, such as ``[bbl_us]/d`` are parsed and processed to yield a combined conversion
+    factor and are not provided separately in this enum even though they may be explicitly 
+    provided in other enumerations.
     """
 
     inch = '[in_i]', Fraction(254, 10_000), 'm'
@@ -262,9 +264,9 @@ class to_si(factor, ReprEnum):
     square_foot = '[sft_i]', Fraction(9_290_304, 100_000_000), 'm2'
     """The square foot"""
     acre = '43560.[sft_i]', Fraction(404_685_642_240, 100_000_000), 'm2'
-    """The acre, defined as 43560 square feet; as of Jan 1, 2023, the acre is defined using the international foot"""
+    """The acre, defined as 43560 square feet; as of Jan 1, 2023, the US acre is defined using the international foot"""
     survey_acre = '[acr_us]', Fraction(62_726_400_000, 15_499_969), 'm2'
-    """The acre, defined as 43560 square feet; prior to Jan 1, 2023, the acre was defined using the US Survey Foot"""
+    """The acre, defined as 43560 square feet; prior to Jan 1, 2023, the US acre was defined using the US Survey Foot"""
     cubic_inch = '[cin_i]', Fraction(16_387_064, 1_000_000_000_000), 'm3'
     """The cubic inch"""
     cubic_foot = '[cft_i]', Fraction(28_316_846_592, 1_000_000_000_000), 'm3'
@@ -274,7 +276,7 @@ class to_si(factor, ReprEnum):
     barrel = '[bbl_us]', Fraction(158_987_294_928, 1_000_000_000_000), 'm3'
     """The oil barrel (1 bbl := 42 liq gal (US))"""
     thousand_barrels = '10^3.[bbl_us]', Fraction(158_987_294_928, 1_000_000_000), 'm3'
-    """One thousand barrels (1 Mbbl := 10^3 bbl) (note: this is **not** the prefix "mega-", it is "M = mille = thousand", a "customary" prefix)"""
+    """One thousand barrels (1 Mbbl := 10^3 bbl) (note: this is **not** the prefix "mega-", it is "M = mille = thousand", a US oil and gas customary prefix)"""
     million_barrels = '10^6.[bbl_us]', Fraction(158_987_294_928, 1_000_000), 'm3'
     """One million barrels (1 MMbbl := 10^6 bbl) (note: this is **not** the prefix "mega-" - it is also not the Roman numeral "MM=2000" - it is "M" x "M" = 1000000)"""
     centimeter = 'cm', Fraction(1, 100), 'm'
@@ -295,3 +297,19 @@ class to_si(factor, ReprEnum):
     """Cubic centimeter or centimetre cubed"""
     cubic_meter = 'm3', 1, 'm3'
     """Cubic meter or metre cubed"""
+    gram_percent = "g%", 10_000, "g/m3"
+    """Gram percent (100 g% := 1 g/cm^3)"""
+    # pound, gram
+    standard_gravity = "[g]", Fraction(980_665, 100_000), "m/s2"
+    # Pound-force, newton
+    pascal = "Pa", 1, "Pa"
+    psi = "[psi]", Fraction(44_482_216_152_605, 6_451_600_000), "Pa"
+    atmosphere = "atm", 101_325, "Pa"
+    bar = "bar", 100_000, "Pa"
+    meter_h2o = "m[H2O]", Fraction(980_665, 100), "Pa"
+    """Conventional meter of water column"""
+    inch_h2o = "[in_i'H2O]", Fraction(24_908_891, 100_000), "Pa"
+    """Conventional inch of water column"""
+    foot_h2o = "12.[in_i'H2O]", Fraction(298_906_692, 100_000), "Pa"
+    """Conventional foot water column; note - there is no UCUM unit 
+    for foot of water column, so this is a pre-computed compound unit"""
