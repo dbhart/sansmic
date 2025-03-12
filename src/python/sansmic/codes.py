@@ -3,10 +3,19 @@
 """
 Provides enums of the accepted unit codes for input variables and output formats.
 
-Recognized codes come from the `Uniform Codes for Units of Measurement` ([UCUM]_)
+Recognized codes come from the `Uniform Codes for Units of Measurement` (term:`UCUM`)
 or the UNECE Rec 20 `Codes for Units Of Measure Used in International Trade` (:term:`UNECE`) 
 coding systems. UCUM codes must be the **case-sensitive** code; UNECE codes should
 be provided in uppercase.
+
+
+.. references::
+
+    UCUM:  https://ucum.org/. See https://unitsofmeasure.org/license for the full 
+    UCUM License and Copyright notice.
+
+    UNECE Rec 20:  https://service.unece.org/trade/uncefact/vocabulary/rec20/
+
 """
 
 from collections import namedtuple
@@ -55,17 +64,17 @@ class Unit(float):
 class SmallLengthsUnit(Unit, ReprEnum):
     """Convert casing radii to inches, the internal unit.
     Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
-    (in `it` font) coding systems. Codes are **case sensitive**.
+    (in *IT* font) coding systems. Codes are **case sensitive**.
 
     Accepted codes for inputs are:
-    ``[in_i]`` 
-        inches
-    ``[ft_i]``
-        feet (international)
-    ``mm``
-        millimeters
-    ``cm``
-        centimeters
+        ``[in_i]`` or *INH*
+            inches
+        ``[ft_i]`` or *FOT*
+            feet (international)
+        ``mm`` or *MMT*
+            millimeters
+        ``cm`` or *CMT*
+            centimeters
     """
     @property
     def internal_unit(self):
@@ -85,15 +94,15 @@ class SmallLengthsUnit(Unit, ReprEnum):
 class LargeLengthsUnit(Unit, ReprEnum):
     """Convert depths and cavern radii to international feet, the internal unit.
     Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
-    (in `it` font) coding systems. Codes are **case sensitive**.
+    (in *IT* font) coding systems. Codes are **case sensitive**.
     
     Accepted codes for inputs are:
-    ``[ft_i]`` or `FOT`
-        foot (international)
-    ``[ft_us]`` or `M51`
-        foot ("deprecated" U.S. survey)
-    ``m`` or `MTR`
-        meters
+        ``[ft_i]`` or *FOT*
+            foot (international)
+        ``[ft_us]`` or *M51*
+            foot ("deprecated" U.S. survey)
+        ``m`` or *MTR*
+            meters
     """
     @property
     def internal_unit(self):
@@ -111,7 +120,7 @@ class LargeLengthsUnit(Unit, ReprEnum):
 class VolumeUnit(Unit, ReprEnum):
     """
     Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
-    (in `it` font) coding systems. Codes are **case sensitive**.
+    (in *IT* font) coding systems. Codes are **case sensitive**.
     """
     @property
     def internal_unit(self):
@@ -129,29 +138,30 @@ class VolumeUnit(Unit, ReprEnum):
 class TimingUnit(Unit, ReprEnum):
     """Convert time units to hours, the internal unit.
     Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
-    (in `it` font) coding systems. Codes are **case sensitive**.
+    (in *IT* font) coding systems. Codes are **case sensitive**.
 
-    The following codes can be used for solver step sizes, but not durations:
-    ``s``
-        seconds (useful for timesteps but not durations)
-    ``min``
-        minutes (useful for timesteps but not durations)
+    The following codes can be used for defining solver step sizes, but cannot be used to specify durations:
+        ``s``:
+            seconds
+        ``min``:
+            minutes
 
 
-    Accepted codes for both solver step size and stage durations; also available as output formats:
-    ``h``
-        hours; display format: ``X.xx h``
-    ``d``
-        days (durations rounded to nearest timestep); display format: ``X d  Y.yy h``
+    Accepted codes for both solver step size and stage durations; they are also available to customize output formats.
+    Durations are rounded to nearest timestep when using days or larger:
+        ``h``:
+            hours; display format: ``X.xx h``
+        ``d``: 
+            days; display format: ``X d  Y.yy h``
     
 
-    The following codes can be used for durations, but not solver step size, and are also availabe as output formats:
-    ``wk``
-        weeks (1 wk == 7 d); display format: ``X wk  Y.yy d``
-    ``mo_j``
-        months, Julian (1 mo_j == 30 d 10 h 30 min); display format: ``X mo  Y.yy d``
-    ``a_j``
-        years, Julian (1 a_j == 365 d 6 h); display format: ``X a_j  Y.yy d``
+    The following codes can be used for durations, but not for solver step size; they are also availabe to customize output formats:
+        ``wk``:
+            weeks; display format: ``X wk  Y.yy d``
+        ``mo_j``:
+            months (mean Julian month = 30 d 10 h 30 min, exactly); display format: ``X mo  Y.yy d``
+        ``a_j``:
+            years (mean Julian year = 365.25 days, exactly); display format: ``X a_j  Y.yy d``
 
 
     Additional output formats for times are also available, see the input file help for details.
@@ -173,21 +183,21 @@ class TimingUnit(Unit, ReprEnum):
 class ConstantFlowrateUnit(Unit, ReprEnum):
     """Convert flow units for constant rates to barrels per day, the internal units.
     Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
-    (in `it` font) coding systems. Codes are **case sensitive**.
+    (in *IT* font) coding systems. Codes are **case sensitive**.
 
     Accepted codes for inputs are:
-    ``[bbl_us]/d``
-        barrels per day
-    ``[bbl_us]/h``
-        barrels per hour
-    ``[bbl_us]/min``
-        barrels per minute
-    ``m3/d``
-        cubic meters per day
-    ``m3/h``
-        cubic meters per hour
-    ``m3/min``
-        cubic meters per minute
+        ``[bbl_us]/d`` or *B1*
+            barrels per day
+        ``[bbl_us]/h`` or *J62*
+            barrels per hour
+        ``[bbl_us]/min`` or *5A*
+            barrels per minute
+        ``m3/d`` or *G52*
+            cubic meters per day
+        ``m3/h`` or *MQH*
+            cubic meters per hour
+        ``m3/min`` or *G53*
+            cubic meters per minute
     """
     @property
     def internal_unit(self):
@@ -203,29 +213,29 @@ class ConstantFlowrateUnit(Unit, ReprEnum):
     unece_barrel_us_petroleum_per_day = 'B1', 1
     unece_barrel_us_petroleum_per_hour = 'J62', 24
     unece_barrel_us_petroleum_per_minute = '5A', 1440
-    unece_cubic_metre_per_day = 'G52'
-    unece_cubic_metre_per_hour = 'MQH'
-    unece_cubic_metre_per_minute = 'G53'
+    unece_cubic_metre_per_day = 'G52', Fraction(1_000_000_000_000, 158_987_294_928)
+    unece_cubic_metre_per_hour = 'MQH', Fraction(24_000_000_000_000, 158_987_294_928)
+    unece_cubic_metre_per_minute = 'G53', Fraction(1_440_000_000_000_000, 158_987_294_928)
 
 
 class VariableFlowrateUnit(Unit, ReprEnum):
     """Convert flow units for variable rates to barrels per hour, the internal units.
     Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
-    (in `it` font) coding systems. Codes are **case sensitive**.
+    (in *IT* font) coding systems. Codes are **case sensitive**.
 
     Accepted codes for inputs are:
-    ``[bbl_us]/d``
-        barrels per day
-    ``[bbl_us]/h``
-        barrels per hour
-    ``[bbl_us]/min``
-        barrels per minute
-    ``m3/d``
-        cubic meters per day
-    ``m3/h``
-        cubic meters per hour
-    ``m3/min``
-        cubic meters per minute
+        ``[bbl_us]/d`` or *B1*
+            barrels per day
+        ``[bbl_us]/h`` or *J62*
+            barrels per hour
+        ``[bbl_us]/min`` or *5A*
+            barrels per minute
+        ``m3/d`` or *G52*
+            cubic meters per day
+        ``m3/h`` or *MQH*
+            cubic meters per hour
+        ``m3/min`` or *G53*
+            cubic meters per minute
     """
     @property
     def internal_unit(self):
@@ -238,12 +248,12 @@ class VariableFlowrateUnit(Unit, ReprEnum):
     ucum_cubic_meters_per_day = 'm3/d', Fraction(1_000_000_000_000, 3_815_695_078_272)
     ucum_cubic_meters_per_hour = 'm3/h', Fraction(1_000_000_000_000, 158_987_294_928)
     ucum_cubic_meters_per_minute = 'm3/min', Fraction(60_000_000_000_000, 158_987_294_928)
-    unece_barrel_us_petroleum_per_day = 'B1'
-    unece_barrel_us_petroleum_per_hour = 'J62'
-    unece_barrel_us_petroleum_per_minute = '5A'
-    unece_cubic_metre_per_day = 'G52'
-    unece_cubic_metre_per_hour = 'MQH'
-    unece_cubic_metre_per_minute = 'G53'
+    unece_barrel_us_petroleum_per_day = 'B1', Fraction(1, 24)
+    unece_barrel_us_petroleum_per_hour = 'J62', 1
+    unece_barrel_us_petroleum_per_minute = '5A', 60
+    unece_cubic_metre_per_day = 'G52',Fraction(1_000_000_000_000, 3_815_695_078_272)
+    unece_cubic_metre_per_hour = 'MQH', Fraction(1_000_000_000_000, 158_987_294_928)
+    unece_cubic_metre_per_minute = 'G53', Fraction(60_000_000_000_000, 158_987_294_928)
 
 
 class DensityUnits(Unit, ReprEnum):
@@ -256,20 +266,20 @@ class DensityUnits(Unit, ReprEnum):
     of the fluid in g/mL at 75 °F (23.889 °C).
 
     Accepted codes for density inputs:
-    ``g/cm3``
-        grams per cubic centimeter 
-    ``kg/m3``
-        kilograms per cubic meter
-    ``t/m3``
-        metric tons (tonnes) per cubic meter
-    ``g/mL``, ``g/ml``
-        grams per milliliter (millilitre)
-    ``kg/L``, ``kg/l``
-        kilograms per liter (litre)
-    ``{s.g.}``, ``{sg}``
-        specific gravity
-    ``[lb_av]/[ft_i]3``
-        pounds per cubic foot; this can be used for inputs, only
+        ``g/cm3``
+            grams per cubic centimeter 
+        ``kg/m3``
+            kilograms per cubic meter
+        ``t/m3``
+            metric tons (tonnes) per cubic meter
+        ``g/mL``, ``g/ml``
+            grams per milliliter (millilitre)
+        ``kg/L``, ``kg/l``
+            kilograms per liter (litre)
+        ``{s.g.}``, ``{sg}``
+            specific gravity
+        ``[lb_av]/[ft_i]3``, ``[lb_av]/[cft_i]``, or *87*
+            pounds per cubic foot; this can be used for inputs, only
     """
     @property
     def internal_unit(self):
