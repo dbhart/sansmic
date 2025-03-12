@@ -1,53 +1,62 @@
 # coding: utf-8
 
 """
-Provide lists of acceptable shortcut codes for I/O and configuration files.
+Provides enums of the accepted unit codes for input variables and output formats.
+
+Recognized codes come from the `Uniform Codes for Units of Measurement` ([UCUM]_)
+or the UNECE Rec 20 `Codes for Units Of Measure Used in International Trade` (:term:`UNECE`) 
+coding systems. UCUM codes must be the **case-sensitive** code; UNECE codes should
+be provided in uppercase.
 """
 
 from collections import namedtuple
 from dataclasses import dataclass
-from enum import ReprEnum
+from enum import ReprEnum, nonmember
 from fractions import Fraction
 
-class factor(float):
-    def __new__(cls, code, factor, base):
+class Unit(float):
+    """
+    Base type for unit enum members, provides the code as string and the
+    conversion factor to the sansmic internal unit as a float, int or fraction.
+    """
+
+    def __new__(cls, code, factor):
         self = float.__new__(cls, factor)
-        self.__init__(code, factor, base)
+        self.__init__(code, factor)
         self._value_ = self
         return self
 
-    def __init__(self, code, factor, base):
+    def __init__(self, code, factor):
         self.__code = code
-        self.__base = base
         self.__factor = factor
         self.__class__._member_map_[code] = self
 
     @property
     def code(self):
+        """The unit code that is recognized"""
         return self.__code
 
     @property
-    def base(self):
-        return self.__base
-
-    @property
     def factor(self):
+        """The conversion factor to the internal units"""
         return self.__factor
 
     def __str__(self):
         return self.__code
 
     def __repr__(self):
-        return f"{self.__code} ~> {self.__base}"
+        return f"{self.__class__.__name__}({repr(self.__code)})"
 
     @classmethod
     def _missing_(cls, value):
         return cls[value]
     
 
-class small_len_unit(factor, ReprEnum):
-    """For casing diameters, internal units are inches.
-    
+class SmallLengthsUnit(Unit, ReprEnum):
+    """Convert casing radii to inches, the internal unit.
+    Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
+    (in `it` font) coding systems. Codes are **case sensitive**.
+
     Accepted codes for inputs are:
     ``[in_i]`` 
         inches
@@ -58,81 +67,70 @@ class small_len_unit(factor, ReprEnum):
     ``cm``
         centimeters
     """
-    inch = '[in_i]', 1, '[in_i]'
-    foot = '[ft_i]', 12, '[in_i]'
-    millimeter = 'mm', Fraction(10, 254), '[in_i]'
-    centimeter = 'cm', Fraction(100, 254), '[in_i]'
+    @property
+    def internal_unit(self):
+        """The code for the internally-used units"""
+        return '[in_i]'
+
+    ucum_international_inch = '[in_i]', 1
+    ucum_international_foot = '[ft_i]', 12
+    ucum_millimeter = 'mm', Fraction(10, 254)
+    ucum_centimeter = 'cm', Fraction(100, 254)
+    unece_inch = 'INH', 1
+    unece_foot = 'FOT', 12
+    unece_millimeter = 'MMT', Fraction(10, 254)
+    unece_centimeter = 'CMT', Fraction(100, 254)
 
 
-class large_len_unit(factor, ReprEnum):
-    """For depths and cavern radii, internal units are feet.
+class LargeLengthsUnit(Unit, ReprEnum):
+    """Convert depths and cavern radii to international feet, the internal unit.
+    Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
+    (in `it` font) coding systems. Codes are **case sensitive**.
     
     Accepted codes for inputs are:
-    ``[ft_i]``
-        feet (international)
-    ``[ft_us]``
-        feet ("deprecated" U.S. survey)
-    ``m``
+    ``[ft_i]`` or `FOT`
+        foot (international)
+    ``[ft_us]`` or `M51`
+        foot ("deprecated" U.S. survey)
+    ``m`` or `MTR`
         meters
     """
-    foot = '[ft_i]', 1, '[ft_i]'
-    survey_foot = '[ft_us]', Fraction(1_000_000, 999_998), '[ft_i]'
-    meter = 'm', Fraction(10_000, 3_048), '[ft_i]'
+    @property
+    def internal_unit(self):
+        """The code for the internally-used units"""
+        return '[ft_i]'
+
+    ucum_international_foot = '[ft_i]', 1
+    ucum_survey_foot = '[ft_us]', Fraction(1_000_000, 999_998)
+    ucum_meter = 'm', Fraction(10_000, 3_048)
+    unece_foot = 'FOT', 1
+    unece_foot_us_survey = 'M51', Fraction(1_000_000, 999_998)
+    unece_metre = 'MTR', Fraction(10_000, 3_048)
 
 
-class const_flow_unit(factor, ReprEnum):
-    """Constant flowrate simulations are stored internally in bbl/d.
-    
-    Accepted codes for inputs are:
-    ``[bbl_us]/d``
-        barrels per day
-    ``[bbl_us]/h``
-        barrels per hour
-    ``[bbl_us]/min``
-        barrels per minute
-    ``m3/d``
-        cubic meters per day
-    ``m3/h``
-        cubic meters per hour
-    ``m3/min``
-        cubic meters per minute
+class VolumeUnit(Unit, ReprEnum):
     """
-    barrels_per_day = '[bbl_us]/d', 1, '[bbl_us]/d'
-    barrels_per_hour = '[bbl_us]/h', 24, '[bbl_us]/d'
-    barrels_per_minute = '[bbl_us]/min', 1440, '[bbl_us]/d'
-    cubic_meters_per_day = 'm3/d', Fraction(1_000_000_000_000, 158_987_294_928), '[bbl_us]/d'
-    cubic_meters_per_hour = 'm3/h', Fraction(24_000_000_000_000, 158_987_294_928), '[bbl_us]/d'
-    cubic_meters_per_minute = 'm3/min', Fraction(1_440_000_000_000_000, 158_987_294_928), '[bbl_us]/d'
-
-
-class table_flow_unit(factor, ReprEnum):
-    """Variable flowrate simulations are stored internally in bbl/h.
-    
-    Accepted codes for inputs are:
-    ``[bbl_us]/d``
-        barrels per day
-    ``[bbl_us]/h``
-        barrels per hour
-    ``[bbl_us]/min``
-        barrels per minute
-    ``m3/d``
-        cubic meters per day
-    ``m3/h``
-        cubic meters per hour
-    ``m3/min``
-        cubic meters per minute
+    Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
+    (in `it` font) coding systems. Codes are **case sensitive**.
     """
-    barrels_per_day = '[bbl_us]/d', Fraction(1, 24), '[bbl_us]/h'
-    barrels_per_hour = '[bbl_us]/h', 1, '[bbl_us]/h'
-    barrels_per_minute = '[bbl_us]/min', 60, '[bbl_us]/h'
-    cubic_meters_per_day = 'm3/d', Fraction(1_000_000_000_000, 3_815_695_078_272), '[bbl_us]/h'
-    cubic_meters_per_hour = 'm3/h', Fraction(1_000_000_000_000, 158_987_294_928), '[bbl_us]/h'
-    cubic_meters_per_minute = 'm3/min', Fraction(60_000_000_000_000, 158_987_294_928), '[bbl_us]/h'
+    @property
+    def internal_unit(self):
+        """The code for the internally-used units"""
+        return '[bbl_us]'
+
+    ucum_barrel = '[bbl_us]'
+    ucum_cubic_foot = 'ft3', 1
+    ucum_cubic_meter = 'm3'
+    unece_cubic_metre = 'MTQ'
+    unece_cubic_foot = 'FTQ', 1
+    unece_barrel_us_petroleum = 'BLL'
 
 
-class time_unit(factor, ReprEnum):
-    """Internal time units are stored in fractional hours.
-    
+class TimingUnit(Unit, ReprEnum):
+    """Convert time units to hours, the internal unit.
+    Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
+    (in `it` font) coding systems. Codes are **case sensitive**.
+
     The following codes can be used for solver step sizes, but not durations:
     ``s``
         seconds (useful for timesteps but not durations)
@@ -158,18 +156,104 @@ class time_unit(factor, ReprEnum):
 
     Additional output formats for times are also available, see the input file help for details.
     """
-    second = 's', Fraction(1, 3_600), 'h'
-    minute = 'min', Fraction(1, 60), 'h'
-    hour = 'h', 1, 'h'
-    day = 'd', 24, 'h'
-    week = 'wk', 168, 'h'
-    month_ave = 'mo_j', Fraction(1461, 2), 'h'
-    year = 'a_j', 8766, 'h'
+    @property
+    def internal_unit(self):
+        """The code for the internally-used units"""
+        return 'h'
+
+    second = 's', Fraction(1, 3_600)
+    minute = 'min', Fraction(1, 60)
+    hour = 'h', 1
+    day = 'd', 24
+    week = 'wk', 168
+    month_ave = 'mo_j', Fraction(1461, 2)
+    year = 'a_j', 8766
 
 
-class density_unit(factor, ReprEnum):
-    """Internal density units are generally in g/cm3 or in specific gravity (sg).
-    Specific gravity is treated as if it were the density at 75 °F (23.889 °C).
+class ConstantFlowrateUnit(Unit, ReprEnum):
+    """Convert flow units for constant rates to barrels per day, the internal units.
+    Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
+    (in `it` font) coding systems. Codes are **case sensitive**.
+
+    Accepted codes for inputs are:
+    ``[bbl_us]/d``
+        barrels per day
+    ``[bbl_us]/h``
+        barrels per hour
+    ``[bbl_us]/min``
+        barrels per minute
+    ``m3/d``
+        cubic meters per day
+    ``m3/h``
+        cubic meters per hour
+    ``m3/min``
+        cubic meters per minute
+    """
+    @property
+    def internal_unit(self):
+        """The code for the internally-used units"""
+        return '[bbl_us]/d'
+
+    ucum_barrels_per_day = '[bbl_us]/d', 1
+    ucum_barrels_per_hour = '[bbl_us]/h', 24
+    ucum_barrels_per_minute = '[bbl_us]/min', 1440
+    ucum_cubic_meters_per_day = 'm3/d', Fraction(1_000_000_000_000, 158_987_294_928)
+    ucum_cubic_meters_per_hour = 'm3/h', Fraction(24_000_000_000_000, 158_987_294_928)
+    ucum_cubic_meters_per_minute = 'm3/min', Fraction(1_440_000_000_000_000, 158_987_294_928)
+    unece_barrel_us_petroleum_per_day = 'B1', 1
+    unece_barrel_us_petroleum_per_hour = 'J62', 24
+    unece_barrel_us_petroleum_per_minute = '5A', 1440
+    unece_cubic_metre_per_day = 'G52'
+    unece_cubic_metre_per_hour = 'MQH'
+    unece_cubic_metre_per_minute = 'G53'
+
+
+class VariableFlowrateUnit(Unit, ReprEnum):
+    """Convert flow units for variable rates to barrels per hour, the internal units.
+    Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
+    (in `it` font) coding systems. Codes are **case sensitive**.
+
+    Accepted codes for inputs are:
+    ``[bbl_us]/d``
+        barrels per day
+    ``[bbl_us]/h``
+        barrels per hour
+    ``[bbl_us]/min``
+        barrels per minute
+    ``m3/d``
+        cubic meters per day
+    ``m3/h``
+        cubic meters per hour
+    ``m3/min``
+        cubic meters per minute
+    """
+    @property
+    def internal_unit(self):
+        """The code for the internally-used units"""
+        return '[bbl_us]/h'
+
+    ucum_barrels_per_day = '[bbl_us]/d', Fraction(1, 24)
+    ucum_barrels_per_hour = '[bbl_us]/h', 1
+    ucum_barrels_per_minute = '[bbl_us]/min', 60
+    ucum_cubic_meters_per_day = 'm3/d', Fraction(1_000_000_000_000, 3_815_695_078_272)
+    ucum_cubic_meters_per_hour = 'm3/h', Fraction(1_000_000_000_000, 158_987_294_928)
+    ucum_cubic_meters_per_minute = 'm3/min', Fraction(60_000_000_000_000, 158_987_294_928)
+    unece_barrel_us_petroleum_per_day = 'B1'
+    unece_barrel_us_petroleum_per_hour = 'J62'
+    unece_barrel_us_petroleum_per_minute = '5A'
+    unece_cubic_metre_per_day = 'G52'
+    unece_cubic_metre_per_hour = 'MQH'
+    unece_cubic_metre_per_minute = 'G53'
+
+
+class DensityUnits(Unit, ReprEnum):
+    """Convert density units to specific gravity or grams per cubic centimeter.
+    Recognized codes come from either :term:`UCUM` (in ``TT`` font) or :term:`UNECE` 
+    (in `it` font) coding systems. Codes are **case sensitive**.
+
+    Because temperature effects are currently off within the sansmic
+    dissolution model, specific gravity inputs should be equal to the density
+    of the fluid in g/mL at 75 °F (23.889 °C).
 
     Accepted codes for density inputs:
     ``g/cm3``
@@ -180,136 +264,27 @@ class density_unit(factor, ReprEnum):
         metric tons (tonnes) per cubic meter
     ``g/mL``, ``g/ml``
         grams per milliliter (millilitre)
-    ``g/dL``, ``g/dl``
-        grams per deciliter (decilitre)
     ``kg/L``, ``kg/l``
         kilograms per liter (litre)
-    ``g%``
-        gram-percent (``100 g% = 1 g/cm3``)
-    ``{s.g.}``, ``{sg}``, ``{SG}``
+    ``{s.g.}``, ``{sg}``
         specific gravity
-    ``[lb_av]/[in_i]3``
-        pounds (avoirdupois) per cubic inch
-    ``[lb_av]/[gal_us]``
-        pounds per U.S. (liquid) gallon
     ``[lb_av]/[ft_i]3``
-        pounds per cubic foot
-    ``[lb_av]/[bbl_us]``
-        pounds per (oil) barrel
+        pounds per cubic foot; this can be used for inputs, only
     """
-    gram_per_cm3 = 'g/cm3', 1, 'g/cm3'
-    gram_per_milliliter = 'g/mL', 1, 'g/cm3'
-    gram_per_millilitre = 'g/ml', 1, 'g/cm3'
-    gram_per_deciliter = 'g/dL', Fraction(1,100), 'g/cm3'
-    gram_per_decilitre = 'g/dl', Fraction(1,100), 'g/cm3'
-    gram_percent = 'g%', Fraction(1, 100), 'g/cm3'
-    kilogram_per_cubic_meter = 'kg/m3', Fraction(1,1000), 'g/cm3'
-    kilogram_per_liter = 'kg/L', Fraction(1, 1000), 'g/cm3'
-    kilogram_per_litre = 'kg/l', Fraction(1, 1000), 'g/cm3'
-    metric_ton_per_cubic_meter =  't/m3', 1, 'g/cm3'
-    tonne_per_cubic_meter = metric_ton_per_cubic_meter
-    specific_gravity = r'{s.g.}', 1, 'g/cm3'
-    sg = r'{sg}', 1, 'g/cm3'
-    SG = r'{SG}', 1, 'g/cm3'
-    pounds_per_cubic_inch = '[lb_av]/[in_i]', Fraction(453_592_370, 16_387_064), 'g/cm3'
-    pounds_per_gallon = '[lb_av]/[gal_us]', Fraction(453_592_370, 3_785_411_784), 'g/cm3'
-    pounds_per_cubic_foot = '[lb_av]/[ft_i]', Fraction(453_592_370, 28_316_846_592), 'g/cm3'
-    pounds_per_barrel = '[lb_av]/[bbl_us]', Fraction(453_592_370, 158_987_294_928), 'g/cm3'
+    @property
+    def internal_unit(self):
+        """The code for the internally-used units"""
+        return r'{s.g.}'
 
-
-class to_si(factor, ReprEnum):
-    """Unit conversion factors to base SI units (m, kg, s, K).
-    
-    Regarding the international foot and survey foot: the United States, as provided in Federal 
-    Register (October 5, 2020, 85 FR 62698, p. 62698), has deprecated the U.S. Survey Foot and
-    has indicated that it should be phased out for all but use with historical data in favor of
-    the international foot (which has been the legal "foot" for all but land surveys and geodessy 
-    in the U.S. since 1959). 
-    
-    Beginning January 1, 2023, the historical Gunter's, or chain-based, survey measures, i.e., the
-    link, rod, chain, furlong, mile, section, acre and acre-foot, will continue to be defined 
-    based on their relationship to "a foot" - i.e., an acre is still 43560 square feet and a
-    furlong is still 660 feet. NIST has decided that, because historical survey measures
-    are inherently less accurate than the difference between the international and survey foot -
-    the survey foot is only 2 parts per million larger than the international foot - there is
-    no need to make any changes to real property descriptions.
-
-    For practical purposes, this means that real property of 1.25 acres is still 1.25 acres even
-    though a conversion to meters will now result in a smaller value if all decimal points are 
-    used. The difference between the sft and ift is truly significant only in geodessy and in map 
-    coordinates where using the wrong foot could result in mis-loactions by tens of feet.
-
-    The UCUM does not yet have a code (as of version 2.2) for the international acre. Thus, 
-    sansmic uses the code ``43560.[sft_i]`` for an acre defined using the international foot. 
-    Hopefully the acre based on the international foot will be added in the next release of 
-    the UCUM.
-
-    Combined units, such as ``[bbl_us]/d`` are parsed and processed to yield a combined conversion
-    factor and are not provided separately in this enum even though they may be explicitly 
-    provided in other enumerations.
-    """
-
-    inch = '[in_i]', Fraction(254, 10_000), 'm'
-    """The standard inch (1 in := 25.4 mm)"""
-    foot = '[ft_i]', Fraction(3_048, 10_000), 'm'
-    """The international foot; the US foot since 1959 (1 ft := 1 ift := 0.3048 m)"""
-    yard = '[yd_i]', Fraction(9_144, 10_000), 'm'
-    """The international yard; the US yard since 1959 (1 yd := 0.9144 m)"""
-    mile = '[mi_i]', Fraction(16_093_440, 10_000), 'm'
-    """The international mile; the US mile since 1959 (1 mi := 5280 ift)"""
-    survey_foot = '[ft_us]', Fraction(1_200, 3_937), 'm'
-    """The deprecated U.S. survey foot (1 sft := 1200/3937 m) (deprecated as of Jan 1, 2023; used from 1959-2022 for purposes of mapping coordinates and surveying only)"""
-    square_inch = '[sin_i]', Fraction(64_516, 100_000_000), 'm2'
-    """The square inch"""
-    square_foot = '[sft_i]', Fraction(9_290_304, 100_000_000), 'm2'
-    """The square foot"""
-    acre = '43560.[sft_i]', Fraction(404_685_642_240, 100_000_000), 'm2'
-    """The acre, defined as 43560 square feet; as of Jan 1, 2023, the US acre is defined using the international foot"""
-    survey_acre = '[acr_us]', Fraction(62_726_400_000, 15_499_969), 'm2'
-    """The acre, defined as 43560 square feet; prior to Jan 1, 2023, the US acre was defined using the US Survey Foot"""
-    cubic_inch = '[cin_i]', Fraction(16_387_064, 1_000_000_000_000), 'm3'
-    """The cubic inch"""
-    cubic_foot = '[cft_i]', Fraction(28_316_846_592, 1_000_000_000_000), 'm3'
-    """The (international) cubic foot"""
-    gallon = '[gal_us]'
-    """The US liquid gallon (1 gal := 1 liq gal := 1 gal (US) := 231 in^3)"""
-    barrel = '[bbl_us]', Fraction(158_987_294_928, 1_000_000_000_000), 'm3'
-    """The oil barrel (1 bbl := 42 liq gal (US))"""
-    thousand_barrels = '10^3.[bbl_us]', Fraction(158_987_294_928, 1_000_000_000), 'm3'
-    """One thousand barrels (1 Mbbl := 10^3 bbl) (note: this is **not** the prefix "mega-", it is "M = mille = thousand", a US oil and gas customary prefix)"""
-    million_barrels = '10^6.[bbl_us]', Fraction(158_987_294_928, 1_000_000), 'm3'
-    """One million barrels (1 MMbbl := 10^6 bbl) (note: this is **not** the prefix "mega-" - it is also not the Roman numeral "MM=2000" - it is "M" x "M" = 1000000)"""
-    centimeter = 'cm', Fraction(1, 100), 'm'
-    """Centimeter"""
-    meter = 'm', 1, 'm'
-    "Meter"
-    square_centimeter = 'cm2', Fraction(1, 10_000), 'm2'
-    "Square centimeter or centimetre squared"
-    square_meter = 'm2', 1, 'm2'
-    "Square meter or metre squared"
-    hectare = 'ha', 10_000, 'm2'
-    "Hectare (1 ha := 10000 m^2)"
-    milliliter = 'mL', Fraction(1, 1_000_000), 'm3'
-    "Milliliter or millilitre"
-    liter = 'L', Fraction(1, 1_000), 'm3'
-    "Liter or litre"
-    cubic_centimeter = 'cm3', Fraction(1, 1_000_000), 'm3'
-    """Cubic centimeter or centimetre cubed"""
-    cubic_meter = 'm3', 1, 'm3'
-    """Cubic meter or metre cubed"""
-    gram_percent = "g%", 10_000, "g/m3"
-    """Gram percent (100 g% := 1 g/cm^3)"""
-    # pound, gram
-    standard_gravity = "[g]", Fraction(980_665, 100_000), "m/s2"
-    # Pound-force, newton
-    pascal = "Pa", 1, "Pa"
-    psi = "[psi]", Fraction(44_482_216_152_605, 6_451_600_000), "Pa"
-    atmosphere = "atm", 101_325, "Pa"
-    bar = "bar", 100_000, "Pa"
-    meter_h2o = "m[H2O]", Fraction(980_665, 100), "Pa"
-    """Conventional meter of water column"""
-    inch_h2o = "[in_i'H2O]", Fraction(24_908_891, 100_000), "Pa"
-    """Conventional inch of water column"""
-    foot_h2o = "12.[in_i'H2O]", Fraction(298_906_692, 100_000), "Pa"
-    """Conventional foot water column; note - there is no UCUM unit 
-    for foot of water column, so this is a pre-computed compound unit"""
+    ucum_gram_per_cm3 = 'g/cm3', 1
+    ucum_gram_per_milliliter = 'g/mL', 1
+    ucum_gram_per_millilitre = 'g/ml', 1
+    ucum_kilogram_per_cubic_meter = 'kg/m3', Fraction(1,1000)
+    ucum_kilogram_per_liter = 'kg/L', Fraction(1, 1000)
+    ucum_kilogram_per_litre = 'kg/l', Fraction(1, 1000)
+    ucum_metric_ton_per_cubic_meter =  't/m3', 1
+    specific_gravity = r'{s.g.}', 1
+    sg = r'{sg}', 1
+    ucum_pounds_per_cubic_foot = '[lb_av]/[cft_i]', Fraction(453_592_370, 28_316_846_592)
+    ucum_pounds_per_foot_cubed = '[lb_av]/[ft_i]3', Fraction(453_592_370, 28_316_846_592)
+    unece_pound_per_cubic_foot = '87', Fraction(453_592_370, 28_316_846_592)
